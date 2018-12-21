@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 from utils.errors import check_error
 
+
 def run(addr, op_id, psswd):
     pay_info_url = 'http://' + addr + '/cgi/tbl/Pay'
     pay_info = requests.get(pay_info_url, auth=HTTPDigestAuth(op_id, psswd))

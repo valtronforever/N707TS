@@ -1,6 +1,9 @@
+# coding: utf8
+
 import argparse
+import textwrap
 from configparser import ConfigParser
-from commands import dev_info, scr, oper
+from commands import dev_info, scr, oper, rep_pay, printreport
 
 
 def get_config():
@@ -36,6 +39,20 @@ def main():
                             help='Set operator as active and store appropriate id and password to config')
     parser_oper.add_argument('--service', action='store_true', help='Set service as active operator')
     parser_oper.set_defaults(func=lambda cmd_args: oper.run(*list_config(), cmd_args=cmd_args))
+
+    parser_rep_pay = subparsers.add_parser('rep_pay', help='Get cash amount in cashbox')
+    parser_rep_pay.set_defaults(func=lambda _: rep_pay.run(*list_config()))
+
+    parser_printreport = subparsers.add_parser('printreport', help='Print report')
+    parser_printreport.add_argument('rep_no', choices=['0', '1', '10', '20', '21'], help=textwrap.dedent(u'''\
+    Report No:
+    0 - Дневной обнуляющий отчет,
+    1 - Отчет по обнулению электронной ленты,
+    10 - Дневной отчет без обнуления,
+    20 - Отчет по проданным товарам,
+    21 - Отчет по проданным товарам с обнулением этого отчета
+    '''))
+    parser_printreport.set_defaults(func=lambda cmd_args: printreport.run(*list_config(), cmd_args=cmd_args))
 
     args = parser.parse_args()
     args.func(args)

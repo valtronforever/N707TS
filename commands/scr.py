@@ -1,6 +1,7 @@
 import json
 import requests
 from requests.auth import HTTPDigestAuth
+from utils.errors import check_error
 
 
 def run(addr, op_id, psswd, cmd_args=None):
@@ -11,6 +12,5 @@ def run(addr, op_id, psswd, cmd_args=None):
         'align': cmd_args.align,
     }]
     r = requests.post(url, data=json.dumps(payload, ensure_ascii=False), auth=HTTPDigestAuth(op_id, psswd))
-    if r.status_code != 200:
-        raise Exception
-    print('OK')
+    if not check_error(r):
+        print('OK')

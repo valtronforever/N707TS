@@ -2,8 +2,11 @@
 
 import argparse
 import textwrap
+import requests
+import json
 from configparser import ConfigParser
-from commands import dev_info, state, scr, oper, rep_pay, printreport, getjrnroom, chk, register, whiteip
+from commands import devices, dev_info, state, scr, oper, rep_pay, printreport, getjrnroom, chk, chk_copy, chk_empty,\
+    chk_sync, register, whiteip
 
 
 def get_config():
@@ -14,20 +17,24 @@ def get_config():
 
 def list_config():
     c = get_config()
-    return c['addr'], c['op_id'], c['op_psswd']
+    return c['addr'], c['op_id'], c['op_psswd'], float(c['timeout'])
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--json', action='store_true', help='Output info in json format')
     subparsers = parser.add_subparsers(
         title='subcommands', metavar='{command} -h'
     )
 
+    parser_devices = subparsers.add_parser('devices', help='Get all devices available in current network')
+    parser_devices.set_defaults(func=lambda cmd_args: devices.run(cmd_args=cmd_args))
+
     parser_dev_info = subparsers.add_parser('dev_info', help='Get and print device info')
-    parser_dev_info.set_defaults(func=lambda _: dev_info.run(*list_config()))
+    parser_dev_info.set_defaults(func=lambda cmd_args: dev_info.run(*list_config(), cmd_args=cmd_args))
 
     parser_state = subparsers.add_parser('state', help='Get and print device state')
-    parser_state.set_defaults(func=lambda _: state.run(*list_config()))
+    parser_state.set_defaults(func=lambda cmd_args: state.run(*list_config(), cmd_args=cmd_args))
 
     parser_scr = subparsers.add_parser('scr', help='Print info on client screen')
     parser_scr.add_argument('-l', '--line', choices=['1', '2', '3', '4'], required=True,
@@ -48,13 +55,13 @@ def main():
 
     parser_register = subparsers.add_parser('register', help='Register operator ip')
     parser_register.add_argument('-c', '--clear', action='store_true', help='Remove current operator from whitelist')
-    parser_register.set_defaults(func=lambda _: register.run(*list_config()))
+    parser_register.set_defaults(func=lambda cmd_args: register.run(*list_config(), cmd_args=cmd_args))
 
     parser_rep_pay = subparsers.add_parser('rep_pay', help='Get cash amount in cashbox')
-    parser_rep_pay.set_defaults(func=lambda _: rep_pay.run(*list_config()))
+    parser_rep_pay.set_defaults(func=lambda cmd_args: rep_pay.run(*list_config(), cmd_args=cmd_args))
 
     parser_getjrnroom = subparsers.add_parser('getjrnroom', help='Get journal total and used space')
-    parser_getjrnroom.set_defaults(func=lambda _: getjrnroom.run(*list_config()))
+    parser_getjrnroom.set_defaults(func=lambda cmd_args: getjrnroom.run(*list_config(), cmd_args=cmd_args))
 
     parser_printreport = subparsers.add_parser('printreport', help='Print report')
     parser_printreport.add_argument('rep_no', choices=['0', '1', '10', '20', '21'], help=textwrap.dedent(u'''\
@@ -71,8 +78,36 @@ def main():
     parser_chk.add_argument('json_file', type=argparse.FileType('r'), help='Receipt file in json format')
     parser_chk.set_defaults(func=lambda cmd_args: chk.run(*list_config(), cmd_args=cmd_args))
 
+    parser_chk_copy = subparsers.add_parser('chk_copy', help='Print copy of last receipt')
+    parser_chk_copy.set_defaults(func=lambda cmd_args: chk_copy.run(*list_config(), cmd_args=cmd_args))
+
+    parser_chk_empty = subparsers.add_parser('chk_empty', help='Print empty receipt (open session)')
+    parser_chk_empty.set_defaults(func=lambda cmd_args: chk_empty.run(*list_config(), cmd_args=cmd_args))
+
+    parser_chk_sync = subparsers.add_parser('chk_sync', help='Get receipt journal')
+    parser_chk_sync.add_argument('-o', '--out', type=argparse.FileType('w'), help='Output filename (default: stdout)')
+    parser_chk_sync.add_argument('--id', help='Start from specified id')
+    parser_chk_sync.set_defaults(func=lambda cmd_args: chk_sync.run(*list_config(), cmd_args=cmd_args))
+
     args = parser.parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except requests.exceptions.Timeout:
+        if args.json:
+            print(json.dumps({
+                'result': 'error',
+                'message': 'Connection timeout',
+            }))
+        else:
+            print("Error, connection timeout")
+    except requests.exceptions.ConnectionError:
+        if args.json:
+            print(json.dumps({
+                'result': 'error',
+                'message': 'Connection refused',
+            }))
+        else:
+            print("Error, connection refused")
 
 
 if __name__ == "__main__":

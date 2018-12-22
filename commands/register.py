@@ -24,11 +24,14 @@ import json
 #        print(r.json())
 
 
-def run(addr, op_id, psswd, cmd_args=None):
+def run(addr, op_id, psswd, timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/proc/register'
     if getattr(cmd_args, 'clear', False):
-        r = requests.get(url, params='clear', auth=HTTPDigestAuth(op_id, psswd))
+        r = requests.get(url, params='clear', auth=HTTPDigestAuth(op_id, psswd), timeout=timeout)
     else:
-        r = requests.get(url, auth=HTTPDigestAuth(op_id, psswd))
-    if not check_error(r):
-        print('OK')
+        r = requests.get(url, auth=HTTPDigestAuth(op_id, psswd), timeout=timeout)
+    if not check_error(r, json_out=cmd_args.json):
+        if cmd_args.json:
+            print(json.dumps({'result': 'ok'}))
+        else:
+            print('OK')

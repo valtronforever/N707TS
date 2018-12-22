@@ -1,5 +1,7 @@
 # coding: utf8
 
+import json
+
 err_dict = {
     'x01': u'Цена не указана',
     'x02': u'Количество не указано',
@@ -102,17 +104,29 @@ err_dict = {
 }
 
 
-def check_error(r):
+def check_error(r, json_out=None):
     if r.status_code != 200:
-        print("Error, status code %s" % str(r.status_code))
+        if json_out:
+            print(json.dumps({
+                'result': 'error',
+                'message': "Error, status code %s" % str(r.status_code),
+            }))
+        else:
+            print("Error, status code %s" % str(r.status_code))
         return True
     try:
         data = r.json()
         if isinstance(data, dict):
             err = data.get('err', None)
             if err:
-                print("Error code %s, message:" % err)
-                print(err_dict.get(err, 'not message'))
+                if json_out:
+                    print(json.dumps({
+                        'result': 'error',
+                        'message': "Error code %s, message: %s" % (err, err_dict.get(err, 'not message')),
+                    }))
+                else:
+                    print("Error code %s, message:" % err)
+                    print(err_dict.get(err, 'not message'))
                 return True
     except Exception:
         pass

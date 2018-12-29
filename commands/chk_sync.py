@@ -4,7 +4,7 @@ from requests.auth import HTTPDigestAuth
 from utils.errors import check_error
 
 
-def run(addr, op_id, psswd, timeout, cmd_args=None):
+def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/chk'
     params = {}
     start_id = getattr(cmd_args, 'id', None)

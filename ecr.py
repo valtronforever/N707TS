@@ -18,7 +18,7 @@ def get_config(path):
 
 def list_config(path):
     c = get_config(path)
-    return c['addr'], c['op_id'], c['op_psswd'], float(c['timeout'])
+    return c['addr'], c['op_id'], c['op_psswd'], float(c['timeout']), float(c['print_timeout'])
 
 
 def is_valid_file(parser, arg):

@@ -24,7 +24,7 @@ import json
 #        print(r.json())
 
 
-def run(addr, op_id, psswd, timeout, cmd_args=None):
+def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/proc/register'
     if getattr(cmd_args, 'clear', False):
         r = requests.get(url, params='clear', auth=HTTPDigestAuth(op_id, psswd), timeout=timeout)

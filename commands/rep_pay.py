@@ -4,7 +4,7 @@ from requests.auth import HTTPDigestAuth
 from utils.errors import check_error
 
 
-def run(addr, op_id, psswd, timeout, cmd_args=None):
+def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     pay_info_url = 'http://' + addr + '/cgi/tbl/Pay'
     pay_info = requests.get(pay_info_url, auth=HTTPDigestAuth(op_id, psswd), timeout=timeout)
     pay_info = pay_info.json()

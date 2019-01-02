@@ -7,7 +7,7 @@ import requests
 import json
 from configparser import ConfigParser
 from commands import devices, dev_info, state, scr, oper, rep_pay, printreport, getjrnroom, chk, chk_copy, chk_empty,\
-    chk_sync, register, whiteip
+    chk_sync, register, whiteip, chk_in, chk_out
 
 
 def get_config(path):
@@ -89,6 +89,16 @@ def main():
     parser_chk = subparsers.add_parser('chk', help='Print receipt')
     parser_chk.add_argument('json_file', type=argparse.FileType('r'), help='Receipt file in json format')
     parser_chk.set_defaults(func=lambda cmd_args: chk.run(*list_config(cmd_args.config), cmd_args=cmd_args))
+
+    parser_chk_in = subparsers.add_parser('chk_in', help='Print money deposit receipt')
+    parser_chk_in.add_argument('-n', '--no', type=int, default=1, help='Payment No (default: 1)')
+    parser_chk_in.add_argument('amount', type=float, help='Money amount for deposit')
+    parser_chk_in.set_defaults(func=lambda cmd_args: chk_in.run(*list_config(cmd_args.config), cmd_args=cmd_args))
+
+    parser_chk_out = subparsers.add_parser('chk_out', help='Print money withdrawal receipt')
+    parser_chk_out.add_argument('-n', '--no', type=int, default=1, help='Payment No (default: 1)')
+    parser_chk_out.add_argument('amount', type=float, help='Money amount for withdrawal')
+    parser_chk_out.set_defaults(func=lambda cmd_args: chk_out.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_chk_copy = subparsers.add_parser('chk_copy', help='Print copy of last receipt')
     parser_chk_copy.set_defaults(func=lambda cmd_args: chk_copy.run(*list_config(cmd_args.config), cmd_args=cmd_args))

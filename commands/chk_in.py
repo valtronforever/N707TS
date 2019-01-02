@@ -8,9 +8,13 @@ from utils.errors import check_error
 
 def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/chk'
+    io = {'sum': cmd_args.amount}
+    if cmd_args.no:
+        io['no'] = cmd_args.no
+    payload = {'IO': [{'IO': io}]}
     r = requests.post(
         url,
-        data='{"L":[]}',
+        data=json.dumps(payload, ensure_ascii=False),
         auth=HTTPDigestAuth(op_id, psswd),
         timeout=print_timeout,
     )

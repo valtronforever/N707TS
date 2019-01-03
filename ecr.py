@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 import textwrap
 import requests
 import json
@@ -87,7 +88,8 @@ def main():
         func=lambda cmd_args: printreport.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_chk = subparsers.add_parser('chk', help='Print receipt')
-    parser_chk.add_argument('json_file', type=argparse.FileType('r'), help='Receipt file in json format')
+    parser_chk.add_argument('json_file', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
+                            help='Receipt file in json format (empty - read stdin)')
     parser_chk.set_defaults(func=lambda cmd_args: chk.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_chk_in = subparsers.add_parser('chk_in', help='Print money deposit receipt')

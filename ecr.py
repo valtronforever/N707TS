@@ -7,7 +7,7 @@ import textwrap
 import requests
 import json
 from configparser import ConfigParser
-from commands import devices, dev_info, state, scr, scr_multi, oper, rep_pay, printreport, getjrnroom, chk, chk_copy, chk_empty,\
+from commands import devices, dev_info, state, scr_info, scr, scr_multi, oper, rep_pay, printreport, getjrnroom, chk, chk_copy, chk_empty,\
     chk_sync, register, whiteip, chk_in, chk_out
 
 
@@ -46,6 +46,9 @@ def main():
 
     parser_state = subparsers.add_parser('state', help='Get and print device state')
     parser_state.set_defaults(func=lambda cmd_args: state.run(*list_config(cmd_args.config), cmd_args=cmd_args))
+
+    parser_scr_info = subparsers.add_parser('scr_info', help='Get info about ecr screen')
+    parser_scr_info.set_defaults(func=lambda cmd_args: scr_info.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_scr = subparsers.add_parser('scr', help='Print info on client screen')
     parser_scr.add_argument('-l', '--line', choices=['1', '2', '3', '4'], required=True,

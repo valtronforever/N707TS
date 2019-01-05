@@ -8,7 +8,7 @@ def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/scr'
     r = requests.post(
         url,
-        data=cmd_args.json_file.read(),
+        data=cmd_args.json_str,
         auth=HTTPDigestAuth(op_id, psswd),
         timeout=timeout,
     )

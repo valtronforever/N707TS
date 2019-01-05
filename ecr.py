@@ -56,8 +56,7 @@ def main():
     parser_scr.set_defaults(func=lambda cmd_args: scr.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_scr_multi = subparsers.add_parser('scr_multi', help='Print info on client screen (multiple lines form json file)')
-    parser_scr_multi.add_argument('json_file', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
-                            help='Lines in json format according to dev doc (empty - read stdin)')
+    parser_scr_multi.add_argument('json_str', help='Lines in json format according to dev doc')
     parser_scr_multi.set_defaults(func=lambda cmd_args: scr_multi.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_oper = subparsers.add_parser('oper', help='Print all available operators')

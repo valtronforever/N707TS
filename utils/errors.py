@@ -1,6 +1,7 @@
 # coding: utf8
 
 import json
+from lib.eprint import eprint
 
 err_dict = {
     'x01': u'Цена не указана',
@@ -107,12 +108,12 @@ err_dict = {
 def check_error(r, json_out=None):
     if r.status_code != 200:
         if json_out:
-            print(json.dumps({
+            eprint(json.dumps({
                 'result': 'error',
                 'message': "Error, status code %s" % str(r.status_code),
             }))
         else:
-            print("Error, status code %s" % str(r.status_code))
+            eprint("Error, status code %s" % str(r.status_code))
         return True
     try:
         data = r.json()
@@ -120,13 +121,13 @@ def check_error(r, json_out=None):
             err = data.get('err', None)
             if err:
                 if json_out:
-                    print(json.dumps({
+                    eprint(json.dumps({
                         'result': 'error',
                         'message': "Error code %s, message: %s" % (err, err_dict.get(err, 'not message')),
                     }))
                 else:
-                    print("Error code %s, message:" % err)
-                    print(err_dict.get(err, 'not message'))
+                    eprint("Error code %s, message:" % err)
+                    eprint(err_dict.get(err, 'not message'))
                 return True
     except Exception:
         pass

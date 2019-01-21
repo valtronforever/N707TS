@@ -1,14 +1,22 @@
 # coding: utf8
 
 import argparse
+try:
+    import argcomplete
+    from argcomplete.completers import FilesCompleter
+except ImportError:
+    argcomplete = None
+    FilesCompleter = None
+
 import os
 import sys
 import textwrap
 import requests
 import json
 from configparser import ConfigParser
-from commands import devices, dev_info, state, scr_info, scr, scr_multi, oper, rep_pay, printreport, getjrnroom, chk, chk_copy, chk_empty,\
-    chk_sync, register, whiteip, chk_in, chk_out
+from lib.eprint import eprint
+from commands import devices, dev_info, state, status, scr_info, scr, scr_multi, oper, rep_pay, printreport,\
+    getjrnroom, chk, chk_copy, chk_empty, chk_sync, register, whiteip, chk_in, chk_out
 
 
 def get_config(path):
@@ -32,7 +40,7 @@ def is_valid_file(parser, arg):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default='config.ini', type=lambda x: is_valid_file(parser, x),
-                        help='Specify custom path to config file')
+                        help='Specify custom path to config file').completer = FilesCompleter
     parser.add_argument('--json', action='store_true', help='Output info in json format')
     subparsers = parser.add_subparsers(
         title='subcommands', metavar='{command} -h'
@@ -46,6 +54,9 @@ def main():
 
     parser_state = subparsers.add_parser('state', help='Get and print device state')
     parser_state.set_defaults(func=lambda cmd_args: state.run(*list_config(cmd_args.config), cmd_args=cmd_args))
+
+    parser_status = subparsers.add_parser('status', help='Get and print modem status')
+    parser_status.set_defaults(func=lambda cmd_args: status.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_scr_info = subparsers.add_parser('scr_info', help='Get info about ecr screen')
     parser_scr_info.set_defaults(func=lambda cmd_args: scr_info.run(*list_config(cmd_args.config), cmd_args=cmd_args))
@@ -96,7 +107,7 @@ def main():
 
     parser_chk = subparsers.add_parser('chk', help='Print receipt')
     parser_chk.add_argument('json_file', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
-                            help='Receipt file in json format (empty - read stdin)')
+                            help='Receipt file in json format (empty - read stdin)').completer = FilesCompleter
     parser_chk.set_defaults(func=lambda cmd_args: chk.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_chk_in = subparsers.add_parser('chk_in', help='Print money deposit receipt')
@@ -116,29 +127,34 @@ def main():
     parser_chk_empty.set_defaults(func=lambda cmd_args: chk_empty.run(*list_config(cmd_args.config), cmd_args=cmd_args))
 
     parser_chk_sync = subparsers.add_parser('chk_sync', help='Get receipt journal')
-    parser_chk_sync.add_argument('-o', '--out', type=argparse.FileType('w'), help='Output filename (default: stdout)')
+    parser_chk_sync.add_argument(
+        '-o', '--out', type=argparse.FileType('w'), help='Output filename (default: stdout)'
+    ).completer = FilesCompleter
     parser_chk_sync.add_argument('--id', help='Start from specified id')
     parser_chk_sync.set_defaults(func=lambda cmd_args: chk_sync.run(*list_config(cmd_args.config), cmd_args=cmd_args))
+
+    if argcomplete:
+        argcomplete.autocomplete(parser)
 
     args = parser.parse_args()
     try:
         args.func(args)
     except requests.exceptions.Timeout:
         if args.json:
-            print(json.dumps({
+            eprint(json.dumps({
                 'result': 'error',
                 'message': 'Connection timeout',
             }))
         else:
-            print("Error, connection timeout")
+            eprint("Error, connection timeout")
     except requests.exceptions.ConnectionError:
         if args.json:
-            print(json.dumps({
+            eprint(json.dumps({
                 'result': 'error',
                 'message': 'Connection refused',
             }))
         else:
-            print("Error, connection refused")
+            eprint("Error, connection refused")
 
 
 if __name__ == "__main__":

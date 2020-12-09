@@ -10,7 +10,7 @@ def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     url = 'http://' + addr + '/cgi/chk'
     r = requests.post(
         url,
-        data=cmd_args.json_file.read(),
+        data=cmd_args.json_file.read().encode('utf-8'),
         auth=HTTPDigestAuth(op_id, psswd),
         timeout=print_timeout,
     )

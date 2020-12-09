@@ -13,7 +13,7 @@ def run(addr, op_id, psswd, timeout, print_timeout, cmd_args=None):
     }]
     r = requests.post(
         url,
-        data=json.dumps(payload, ensure_ascii=False),
+        data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
         auth=HTTPDigestAuth(op_id, psswd),
         timeout=timeout,
     )
